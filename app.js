@@ -21,42 +21,74 @@ app.listen(4000, function(){
     console.log("Im working");
 });
 
-app.get('/articles', function(req, res) {
-    Article.find(function(err, arr) {
-        //send back to client
-        if (!err){
-            res.send(arr)
-        } else {
-            res.send(err);
-        }
+
+app.route('/articles')
+    .get(function (req, res){
+        //Finds everything in a collection
+        Article.find(function(err, foundArticles){ 
+            //send back to client
+            if (!err){
+                res.send(foundArticles);
+            } else {
+                res.send(err);
+            }
+        });
+    })
+    .post(function(req, res) {
+        console.log(req.body.title);
+        console.log(req.body.content);
         
-
+        //CREATE in DB
+        const newArticle = new Article({
+            //Define data that we want 
+            title : req.body.title, 
+            content : req.body.content
+        });
+        newArticle.save(function(err){
+            if (err){
+                res.send(err);
+            } else{
+                res.send("Articles Updated");
+            }
+        });
+    
+    })
+    .delete(function(req, res) {
+        Article.deleteMany(function(err) {
+            if (!err){
+                res.send(err)
+            } else {
+                res.send("You have deleted all articles")
+            }
+          })
     });
-});
 
-app.post('/articles', function(req, res) {
-    const title = req.body.title;
-    const content = req.body.content;
+    app.route('/articles/:title')
+        .get(function(req, res) {
+            const inputTitle = req.params.title;
 
-    const newArticle = new Article({
-        title : title, 
-        content : content
-    });
-    newArticle.save(function(err){
-        if (err){
-            res.send(err);
-        } else{
-            res.send("Articles Updated");
-        }
-    });
-});
+            Article.findOne({title : inputTitle}, function(err, foundArticle) {
+                if (foundArticle) {
+                    res.send(foundArticle);
+                } else {
+                    res.send('No article was found');
+                }
+            });
+        })
 
-app.delete('/articles', function(req, res ) {
-    Article.deleteMany(function(err) {
-      if (!err){
-          res.send(err)
-      } else {
-          res.send("You have deleted all articles")
-      }
-    });
-});
+        .put(function(req, res) {
+            
+            Article.update({title : req.params.title}, {title : req.body.title,content : req.body.content}, function(err) {
+                if (!err) {
+                    res.send('Article updated successfully')
+                }
+            } )
+        });
+        // .patch(function(req, res) {
+        //     Article.update({
+
+        //     })
+        // });
+
+
+
