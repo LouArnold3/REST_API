@@ -35,14 +35,14 @@ app.route('/articles')
         });
     })
     .post(function(req, res) {
-        console.log(req.body.title);
-        console.log(req.body.content);
+        title = req.body.title;
+        content = req.body.content;
         
         //CREATE in DB
         const newArticle = new Article({
             //Define data that we want 
-            title : req.body.title, 
-            content : req.body.content
+            title : title, 
+            content : content
         });
         newArticle.save(function(err){
             if (err){
@@ -83,12 +83,29 @@ app.route('/articles')
                     res.send('Article updated successfully')
                 }
             } )
+        })
+        .patch(function(req, res) {
+            Article.replaceOne({title : req.params.title}, {
+                title : req.body,
+                content : req.body
+            }, function(err, replacedItem) {
+                if (!err) {
+                    res.send("Article updated successfully")
+                } else {
+                    res.send(err)
+                }
+            }
+            )
+        })
+        .delete(function(req, res){
+            Article.deleteOne({title : req.params.title}, function(err) {
+                if (!err) {
+                    res.send("Item deleted")
+                } else {
+                    res.send(err)
+                }
+            });
         });
-        // .patch(function(req, res) {
-        //     Article.update({
-
-        //     })
-        // });
 
 
 
